@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🍪 Cookit
 
@@ -148,4 +148,3 @@ docker run -it --rm \
 ## 📜 License
 
 MIT
-]]>
