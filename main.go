@@ -86,30 +86,41 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := browser.EnsureBrowsers(); err != nil {
+		color.Red("  ✗  Browser setup failed: %s", err.Error())
+		os.Exit(1)
+	}
+
 	nav := navigator.New(historyStore)
-	selectedFile, err := nav.Navigate(startPath)
-	if err != nil {
-		color.Red("  ✗  Navigation failed: %s", err.Error())
-		os.Exit(1)
-	}
-
-	color.Green("\n  ✓  Selected: %s", selectedFile)
-
 	cookieParser := parser.New(apiKey)
-	cookies, targetURL, err := cookieParser.ParseCookies(selectedFile)
-	if err != nil {
-		color.Red("  ✗  Cookie parsing failed: %s", err.Error())
-		os.Exit(1)
-	}
-
-	if err := historyStore.Record(selectedFile); err != nil {
-		color.Yellow("  ⚠  Could not save to history: %s", err.Error())
-	}
-
 	launcher := browser.New()
-	if err := launcher.Launch(cookies, targetURL); err != nil {
-		color.Red("  ✗  Browser launch failed: %s", err.Error())
-		os.Exit(1)
+
+	for {
+		selectedFile, err := nav.Navigate(startPath)
+		if err != nil {
+			color.Red("  ✗  Navigation failed: %s", err.Error())
+			continue
+		}
+
+		color.Green("\n  ✓  Selected: %s", selectedFile)
+
+		cookies, targetURL, err := cookieParser.ParseCookies(selectedFile)
+		if err != nil {
+			color.Red("  ✗  Cookie parsing failed: %s", err.Error())
+			continue
+		}
+
+		if err := historyStore.Record(selectedFile); err != nil {
+			color.Yellow("  ⚠  Could not save to history: %s", err.Error())
+		}
+
+		if err := launcher.Launch(cookies, targetURL); err != nil {
+			color.Red("  ✗  Browser launch failed: %s", err.Error())
+		}
+
+		color.HiMagenta("\n  ─────────────────────────────────────────")
+		color.HiMagenta("  🍪  Ready for next cookie file!")
+		color.HiMagenta("  ─────────────────────────────────────────\n")
 	}
 }
 

@@ -1,25 +1,29 @@
-FROM golang:latest AS builder
+FROM golang:alpine AS builder
 
-ENV GOTOOLCHAIN=auto
+RUN apk add --no-cache git
 WORKDIR /build
 COPY go.mod go.sum ./
-RUN go mod download
+RUN GOTOOLCHAIN=auto go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o cookit .
+RUN CGO_ENABLED=0 GOTOOLCHAIN=auto go build -ldflags="-s -w" -o cookit .
 
-FROM mcr.microsoft.com/playwright:v1.52.0-noble
+FROM alpine:latest
 
-USER root
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    font-noto \
+    dbus \
+    && mkdir -p /app/data
 
 COPY --from=builder /build/cookit /usr/local/bin/cookit
-
-RUN mkdir -p /app/data
 WORKDIR /app
 
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV DISPLAY=host.docker.internal:0
 
 ENTRYPOINT ["cookit"]
