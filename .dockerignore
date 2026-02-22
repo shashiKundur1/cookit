@@ -1,0 +1,10 @@
+# ignore everything by default
+*
+# allow these
+!Dockerfile
+!docker-compose.yml
+!go.mod
+!go.sum
+!main.go
+!internal/
+!run.sh

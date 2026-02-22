@@ -1,0 +1,18 @@
+services:
+  cookit:
+    build: .
+    image: cookit:latest
+    container_name: cookit
+    stdin_open: true
+    tty: true
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DISPLAY=host.docker.internal:0
+    volumes:
+      - ./data:/app/data
+      - ${COOKIE_PATH:-.}:/cookies:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    ports:
+      - "8420:8420"
+    network_mode: host
+    entrypoint: [ "cookit", "/cookies" ]
